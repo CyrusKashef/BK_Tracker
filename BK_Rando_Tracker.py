@@ -15,23 +15,34 @@ def read_config():
         config_lines = config_file.readlines()
     move_config_option = "1"
     world_config_option = "1"
+    bg_color = ""
+    fg_color = ""
+    orientation = "Horizontal"
     for line in config_lines:
         if(line.startswith("Moves_Option=")):
             move_config_option = (line.split("=")[1]).replace(" ", "").replace("\n", "")
         elif(line.startswith("World_Order_Option=")):
             world_config_option = (line.split("=")[1]).replace(" ", "").replace("\n", "")
-    return (move_config_option, world_config_option)
+        elif(line.startswith("Background_Color=")):
+            bg_color = (line.split("=")[1]).replace(" ", "").replace("\n", "")
+        elif(line.startswith("Text_Color=")):
+            fg_color = (line.split("=")[1]).replace(" ", "").replace("\n", "")
+        elif(line.startswith("Orientation=")):
+            orientation = (line.split("=")[1]).replace(" ", "").replace("\n", "")
+    return (move_config_option, world_config_option, bg_color, fg_color, orientation)
 
 class App():
-    def __init__(self, bg_color=None):
+    def __init__(self, bg_color=None, fg_color=None):
         self.app_window = tk.Tk()
         self.app_window.winfo_toplevel().title(f"Banjo-Kazooie Tracker v{BK_Tracker_Version}")
         self.app_window.bg_color = bg_color
+        self.app_window.fg_color = fg_color
 
     class App_Button():
         def __init__(self, window, button_text, cmd):
             self.button = tk.Button(window, text=button_text, command=cmd)
             self.button.config(bg=(window.bg_color))
+            self.button.config(fg=(window.fg_color))
 
         def pack_button(self):
             self.button.pack()
@@ -48,7 +59,7 @@ class App():
             self.image1 = tk.PhotoImage(file=image1)
             self.image2 = tk.PhotoImage(file=image2)
             self.current = image_start
-            self.button = tk.Button(window, text=button_text, image=self.image1, command=self.flip_image)
+            self.button = tk.Button(window, bg=(window.bg_color), fg=(window.fg_color), text=button_text, image=self.image1, command=self.flip_image)
 
         def set_image(self, image_num):
             if(image_num == 1):
@@ -77,8 +88,7 @@ class App():
             self.text = button_text
             self.height = height
             self.width = width
-            self.button = tk.Button(window, text=button_text, height=height, width=width, command=self.select_image)
-            self.button.config(bg=(window.bg_color))
+            self.button = tk.Button(window, bg=(window.bg_color), fg=(window.fg_color), text=button_text, height=height, width=width, command=self.select_image)
 
         def select_image(self):
             cwd = os.getcwd() + "\\BK_Images\\Worlds\\"
@@ -131,6 +141,7 @@ class App():
             self.image = tk.PhotoImage(file=image_path)
             self.label = tk.Label(window, image=self.image)
             self.label.config(bg=(window.bg_color))
+            self.label.config(fg=(window.fg_color))
 
         def grid_label(self, row, column):
             self.row = row
@@ -164,6 +175,7 @@ class App():
         self.learned_moves_frame = tk.LabelFrame(self.app_window, text="Learned Moves", width=400, height=400, padx=5, pady=5)
         self.learned_moves_frame.grid(row=0, column=0, sticky="nsew")
         self.learned_moves_frame.bg_color = self.app_window.bg_color
+        self.learned_moves_frame.fg_color = self.app_window.fg_color
         self.talon_trot = self.App_CheckButton(self.learned_moves_frame, "Talon Trot")
         self.talon_trot.grid_checkbutton(row=0, column=0)
         self.beak_buster = self.App_CheckButton(self.learned_moves_frame, "Beak Buster")
@@ -195,9 +207,15 @@ class App():
                             self.seventh_world_options, self.eighth_world_options, self.ninth_world_options]:
             option_menu.set_option("Unknown")
 
-    def world_order_option_menu(self):
+    def world_order_option_menu(self, orientation):
+        if(orientation == "Horizontal"):
+            row = 0
+            col = 1
+        else:
+            row = 1
+            col = 0
         self.world_order_frame = tk.LabelFrame(self.app_window, text="World Order", width=400, height=400, padx=5, pady=5)
-        self.world_order_frame.grid(row=0, column=1, sticky="nsew")
+        self.world_order_frame.grid(row=row, column=col, sticky="nsew")
         options_dict = ["Unknown", "MM - Mumbo's Mountain", "TTC - Treasure Trove Cove", "CC - Clanker's Cavern",
                         "BGS - Bubblegloop Swamp", "FP - Freezeezy Peak", "GV - Gobi's Valley",
                         "MMM - Mad Monster Mansion", "RBB - Rusty Bucket Bay", "CCW - Click Clock Wood"]
@@ -261,6 +279,8 @@ class App():
         self.learned_moves_frame.grid(row=0, column=0, sticky="nsew")
         self.learned_moves_frame.config(bg=(self.app_window.bg_color))
         self.learned_moves_frame.bg_color = self.app_window.bg_color
+        self.learned_moves_frame.config(fg=(self.app_window.fg_color))
+        self.learned_moves_frame.fg_color = self.app_window.fg_color
         self.talon_trot = self.App_Image_Button(window=self.learned_moves_frame,
                                     button_text="Talon Trot",
                                     image1=f"{moves_image_dir}Talon_Trot_Light.png",
@@ -323,11 +343,19 @@ class App():
                        self.seventh_world, self.eighth_world, self.ninth_world]:
             button.reset_button()
 
-    def world_order_pictures(self):
+    def world_order_pictures(self, orientation):
+        if(orientation == "Horizontal"):
+            row = 0
+            col = 1
+        else:
+            row = 1
+            col = 0
         self.world_order_frame = tk.LabelFrame(self.app_window, text="World Order", width=400, height=400, padx=5, pady=5)
-        self.world_order_frame.grid(row=0, column=1, sticky="nsew")
+        self.world_order_frame.grid(row=row, column=col, sticky="nsew")
         self.world_order_frame.config(bg=(self.app_window.bg_color))
         self.world_order_frame.bg_color = self.app_window.bg_color
+        self.world_order_frame.config(fg=(self.app_window.fg_color))
+        self.world_order_frame.fg_color = self.app_window.fg_color
         self.first_world = self.App_Selectable_Image_Button(self.world_order_frame, "Mumbo's Mountain\nEntrance")
         self.first_world.grid_button(row=0, column=0)
         self.second_world = self.App_Selectable_Image_Button(self.world_order_frame, "Treasure Trove Cove\nEntrance")
@@ -353,22 +381,22 @@ class App():
 
     ### MAIN ###
 
-    def main(self, move_config_option, world_config_option):
+    def main(self, move_config_option, world_config_option, orientation):
         if(move_config_option == "1"):
             self.move_checkboxes()
         elif(move_config_option == "2"):
             moves_image_dir = os.getcwd() + "\\BK_Images\\Moves\\"
             self.move_image_buttons(moves_image_dir)
         if(world_config_option == "1"):
-            self.world_order_option_menu()
+            self.world_order_option_menu(orientation)
         elif(world_config_option == "2"):
-            self.world_order_pictures()
+            self.world_order_pictures(orientation)
         ### Close Window ##
         self.app_window.protocol("WM_DELETE_WINDOW", self.app_window.destroy)
         ### Main Loop ###
         self.app_window.mainloop()
 
 if __name__ == '__main__':
-    (move_config_option, world_config_option) = read_config()
-    app = App()#bg_color='Pink')
-    app.main(move_config_option, world_config_option)
+    (move_config_option, world_config_option, bg_color, fg_color, orientation) = read_config()
+    app = App(bg_color=bg_color, fg_color=fg_color)
+    app.main(move_config_option, world_config_option, orientation)
